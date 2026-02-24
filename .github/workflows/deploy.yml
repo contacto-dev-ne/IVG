@@ -1,0 +1,28 @@
+name: Deploy Dashboard to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main  # Se ejecuta cada vez que subes algo a la rama principal
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Inject Sheet ID
+        run: |
+          # Reemplaza el placeholder por el valor del secreto
+          sed -i 's/__SHEET_ID__/${{ secrets.SHEET_ID }}/g' IVG.html
+        env:
+          SHEET_ID: ${{ secrets.SHEET_ID }}
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .
+          publish_branch: gh-pages
+          force_orphan: true
