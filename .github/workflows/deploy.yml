@@ -16,9 +16,7 @@ jobs:
 
       - name: Inject Flow URL
         run: |
-          # Escapamos el carácter '&' para que sed no lo use como referencia al texto buscado
-          ESC_URL=$(echo "${FLOW_URL}" | sed 's/&/\\&/g')
-          sed -i "s|__FLOW_URL__|${ESC_URL}|g" IVG.html
+          python3 -c "import os; c = open('IVG.html').read(); open('IVG.html', 'w').write(c.replace('__FLOW_URL__', os.environ['FLOW_URL']))"
         env:
           FLOW_URL: ${{ secrets.FLOW_URL }}
 
