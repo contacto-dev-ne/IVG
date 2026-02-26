@@ -1124,7 +1124,7 @@
                     // Power Automate "List rows" devuelve { value: [...] }
                     const rawData = Array.isArray(json) ? json : (json.value || []);
 
-                    if (rawData.length === 0) throw new Error('No se encontraron datos en la tabla (Table1)');
+                    if (rawData.length === 0) throw new Error('No se encontraron datos en la tabla (Tabla1)');
 
                     DATA = rawData.map(item => {
                         const o = {};
