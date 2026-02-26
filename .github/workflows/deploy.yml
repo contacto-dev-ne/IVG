@@ -16,8 +16,9 @@ jobs:
 
       - name: Inject Flow URL
         run: |
-          # Reemplaza el placeholder por el valor del secreto
-          sed -i 's|__FLOW_URL__|${{ secrets.FLOW_URL }}|g' IVG.html
+          # Escapamos el carácter '&' para que sed no lo use como referencia al texto buscado
+          ESC_URL=$(echo "${FLOW_URL}" | sed 's/&/\\&/g')
+          sed -i "s|__FLOW_URL__|${ESC_URL}|g" IVG.html
         env:
           FLOW_URL: ${{ secrets.FLOW_URL }}
 
