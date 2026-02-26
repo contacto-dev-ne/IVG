@@ -1065,9 +1065,8 @@
     <div id="tip" class="tip"></div>
 
     <script>
-        // Placeholder para inyectar vía GitHub Secrets o manualmente
-        const SHEET_ID = '__SHEET_ID__';
-        const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`;
+        // Placeholder para inyectar la URL del flujo de Power Automate
+        const FLOW_URL = '__FLOW_URL__';
         const LOGO = 'https://cchc.cl/documents/431409/0/logoCChC.png/002fea99-2039-beec-02a7-a92335532d6f?t=1695346405910';
 
         const CATS = {
@@ -1099,55 +1098,64 @@
         async function fetchData() {
             renderState('loading');
 
-            // List of proxies to try
+            // Lista de proxies para intentar en caso de problemas de CORS
             const proxies = [
+                url => url, // Intentar directo primero
                 url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-                url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-                url => `https://thingproxy.freeboard.io/fetch/${url}`
+                url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`
             ];
 
             let lastError = '';
 
             for (const getProxyUrl of proxies) {
                 try {
-                    const targetUrl = getProxyUrl(CSV_URL);
-                    console.log('Intentando conexión vía:', targetUrl);
+                    const targetUrl = getProxyUrl(FLOW_URL);
+                    console.log('Intentando conexión vía:', targetUrl === FLOW_URL ? 'Directo' : 'Proxy');
 
                     const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
+                    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
 
                     const r = await fetch(targetUrl, { signal: controller.signal });
                     clearTimeout(timeoutId);
 
                     if (!r.ok) throw new Error(`HTTP error! status: ${r.status}`);
 
-                    const csv = await r.text();
-                    if (!csv || csv.trim().length === 0) throw new Error('Documento vacío');
+                    const json = await r.json();
+                    // Power Automate "List rows" devuelve { value: [...] }
+                    const rawData = Array.isArray(json) ? json : (json.value || []);
 
-                    const rows = csv.split('\n').map(r => r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/));
-                    const headers = rows[0].map(h => h.replace(/"/g, '').trim());
+                    if (rawData.length === 0) throw new Error('No se encontraron datos en la tabla (Table1)');
 
-                    DATA = rows.slice(1).filter(r => r.length > 1 && r[0].trim()).map(row => {
+                    DATA = rawData.map(item => {
                         const o = {};
-                        headers.forEach((h, i) => {
-                            let v = row[i]?.replace(/"/g, '').trim() || '';
-                            if (!isNaN(v) && v !== '' && !v.includes('-')) v = parseFloat(v);
-                            o[h] = v;
-                        });
+                        for (let k in item) {
+                            // Omitir metadatos de Power Automate / OData
+                            if (k.startsWith('@odata') || k.startsWith('__PowerAppsId__')) continue;
+
+                            let v = item[k];
+                            // Limpiar comillas y espacios si vienen en el JSON
+                            if (typeof v === 'string') {
+                                v = v.trim().replace(/^"|"$/g, '');
+                                // Convertir a número si corresponde (mismo criterio que antes)
+                                if (v !== '' && !isNaN(v) && !v.includes('-')) {
+                                    v = parseFloat(v);
+                                }
+                            }
+                            o[k] = v;
+                        }
                         return o;
                     });
 
-                    console.log('Datos cargados exitosamente');
+                    console.log('Datos cargados exitosamente:', DATA.length, 'filas');
                     applyFilters();
-                    return; // Éxito, salir de la función
+                    return;
                 } catch (e) {
-                    console.warn(`Fallo con proxy: ${e.message}`);
+                    console.warn(`Fallo en el intento: ${e.message}`);
                     lastError = e.message;
-                    // Continuar al siguiente proxy
                 }
             }
 
-            renderState('error', `Error de conexión: ${lastError}. Por favor, verifica tu conexión o que el archivo de Google Sheets tenga activado "Cualquier persona con el enlace puede ver".`);
+            renderState('error', `Error de conexión: ${lastError}. Por favor, verifica que el flujo de Power Automate esté activo y responda correctamente.`);
         }
 
         function applyFilters() {
@@ -1259,7 +1267,7 @@
         /* Render */
         function renderState(s, msg) {
             const app = document.getElementById('app');
-            if (s === 'loading') { app.innerHTML = '<div class="loader-wrap"><div class="loader-ring"></div><p style="color:var(--text3);font-size:13px">Conectando con Google Sheets...</p></div>'; return; }
+            if (s === 'loading') { app.innerHTML = '<div class="loader-wrap"><div class="loader-ring"></div><p style="color:var(--text3);font-size:13px">Conectando con Excel vía Power Automate...</p></div>'; return; }
             if (s === 'error') { app.innerHTML = `<div class="loader-wrap"><div class="error-box"><i class="fa-solid fa-triangle-exclamation"></i><h2>Error de Conexión</h2><p>${msg}</p><button class="btn btn-primary" onclick="fetchData()"><i class="fa-solid fa-rotate"></i> Reintentar</button></div></div>`; return; }
         }
 

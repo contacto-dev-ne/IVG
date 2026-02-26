@@ -14,12 +14,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Inject Sheet ID
+      - name: Inject Flow URL
         run: |
           # Reemplaza el placeholder por el valor del secreto
-          sed -i 's/__SHEET_ID__/${{ secrets.SHEET_ID }}/g' IVG.html
+          sed -i 's|__FLOW_URL__|${{ secrets.FLOW_URL }}|g' IVG.html
         env:
-          SHEET_ID: ${{ secrets.SHEET_ID }}
+          FLOW_URL: ${{ secrets.FLOW_URL }}
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
