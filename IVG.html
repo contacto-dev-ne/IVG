@@ -1,0 +1,1568 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Índice de Vinculación Gremial (IVG) – CChC Maule</title>
+    <meta name="description" content="Índice de Vinculación Gremial - CChC Maule">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        :root {
+            --cchc-red: #C8102E;
+            --cchc-blue: #003B71;
+            --cchc-red-light: #e8394f;
+            --cchc-blue-light: #1a5a9e;
+            --latente: #e67e22;
+            --vinculado: #f1c40f;
+            --activo: #6fbf73;
+            --integral: #1b7a2b;
+            --latente-bg: rgba(230, 126, 34, .12);
+            --vinculado-bg: rgba(241, 196, 15, .12);
+            --activo-bg: rgba(111, 191, 115, .12);
+            --integral-bg: rgba(27, 122, 43, .12);
+            --radius: 16px;
+            --radius-sm: 10px;
+        }
+
+        /* DARK THEME: rojo + blanco CChC */
+        [data-theme="dark"] {
+            --bg: #0f1118;
+            --surface: #181c28;
+            --surface2: #1e2436;
+            --border: #262e40;
+            --text: #f1f5f9;
+            --text2: #a0aec0;
+            --text3: #64748b;
+            --accent: var(--cchc-red);
+            --accent2: var(--cchc-red-light);
+            --accent-glow: rgba(200, 16, 46, .18);
+        }
+
+        /* LIGHT THEME: azul + rojo CChC */
+        [data-theme="light"] {
+            --bg: #f0f4f8;
+            --surface: #ffffff;
+            --surface2: #f7f9fc;
+            --border: #d9e2ec;
+            --text: #1a2540;
+            --text2: #4a5568;
+            --text3: #7b8794;
+            --accent: var(--cchc-blue);
+            --accent2: var(--cchc-blue-light);
+            --accent-glow: rgba(0, 59, 113, .12);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: background .35s, color .35s
+        }
+
+        .loader-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            gap: 20px
+        }
+
+        .loader-ring {
+            width: 56px;
+            height: 56px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin .8s linear infinite
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg)
+            }
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(16px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        @keyframes pulseGlow {
+
+            0%,
+            100% {
+                box-shadow: 0 0 6px var(--accent-glow)
+            }
+
+            50% {
+                box-shadow: 0 0 20px var(--accent-glow)
+            }
+        }
+
+        .fade-up {
+            animation: fadeUp .45s ease both
+        }
+
+        .d1 {
+            animation-delay: .08s
+        }
+
+        .d2 {
+            animation-delay: .16s
+        }
+
+        .d3 {
+            animation-delay: .24s
+        }
+
+        .d4 {
+            animation-delay: .32s
+        }
+
+        .dashboard {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 24px
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 28px
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px
+        }
+
+        .header-logo {
+            height: 46px;
+            object-fit: contain
+        }
+
+        .header-left h1 {
+            font-size: 24px;
+            font-weight: 900;
+            letter-spacing: -.4px
+        }
+
+        .header-left p {
+            color: var(--text3);
+            font-size: 12px;
+            margin-top: 2px;
+            display: flex;
+            align-items: center;
+            gap: 6px
+        }
+
+        .live-dot {
+            width: 7px;
+            height: 7px;
+            background: #10b981;
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulseGlow 2s infinite
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: all .2s;
+            font-family: inherit;
+            text-decoration: none
+        }
+
+        .btn-outline {
+            background: var(--surface);
+            color: var(--text2);
+            border: 1px solid var(--border)
+        }
+
+        .btn-outline:hover {
+            background: var(--surface2);
+            color: var(--text)
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+            box-shadow: 0 4px 16px var(--accent-glow)
+        }
+
+        .btn-primary:hover {
+            opacity: .9;
+            transform: translateY(-1px)
+        }
+
+        .btn-icon {
+            width: 38px;
+            height: 38px;
+            padding: 0;
+            justify-content: center;
+            border-radius: 10px;
+            font-size: 15px
+        }
+
+        /* KPI */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+            margin-bottom: 24px
+        }
+
+        .kpi {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            transition: all .25s
+        }
+
+        .kpi:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(0, 0, 0, .15)
+        }
+
+        .kpi::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px
+        }
+
+        .kpi.t::before {
+            background: var(--accent)
+        }
+
+        .kpi.la::before {
+            background: var(--latente)
+        }
+
+        .kpi.vi::before {
+            background: var(--vinculado)
+        }
+
+        .kpi.ac::before {
+            background: var(--activo)
+        }
+
+        .kpi.ig::before {
+            background: var(--integral)
+        }
+
+        .kpi-lbl {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text3);
+            margin-bottom: 8px
+        }
+
+        .kpi-val {
+            font-size: 34px;
+            font-weight: 900;
+            line-height: 1
+        }
+
+        .kpi-bar {
+            height: 4px;
+            background: var(--border);
+            border-radius: 4px;
+            margin-top: 12px;
+            overflow: hidden
+        }
+
+        .kpi-bar span {
+            display: block;
+            height: 100%;
+            border-radius: 4px;
+            transition: width .7s
+        }
+
+        .kpi-sub {
+            font-size: 10px;
+            color: var(--text3);
+            margin-top: 8px
+        }
+
+        /* Filters */
+        .filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 24px
+        }
+
+        .search-wrap {
+            position: relative;
+            flex: 1;
+            min-width: 220px
+        }
+
+        .search-wrap input {
+            width: 100%;
+            padding: 11px 14px 11px 40px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            font-size: 13px;
+            font-family: inherit;
+            outline: none;
+            transition: border .2s
+        }
+
+        .search-wrap input:focus {
+            border-color: var(--accent)
+        }
+
+        .search-wrap i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text3)
+        }
+
+        .fbtn {
+            padding: 9px 14px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text2);
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .2s;
+            font-family: inherit
+        }
+
+        .fbtn:hover,
+        .fbtn.on {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent)
+        }
+
+        .fbtn .n {
+            background: rgba(255, 255, 255, .15);
+            padding: 2px 6px;
+            border-radius: 5px;
+            margin-left: 5px;
+            font-size: 9px
+        }
+
+        /* Charts */
+        .row2 {
+            display: grid;
+            grid-template-columns: 5fr 3fr;
+            gap: 18px;
+            margin-bottom: 24px
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 22px;
+            transition: background .35s, border .35s
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 800;
+            margin-bottom: 3px
+        }
+
+        .card-sub {
+            font-size: 11px;
+            color: var(--text3);
+            margin-bottom: 18px
+        }
+
+        /* Matrix */
+        .mx {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16/10;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            background: var(--bg)
+        }
+
+        .mq {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            padding: 10px
+        }
+
+        .mq.tl {
+            top: 0;
+            left: 0;
+            background: var(--integral-bg);
+            border-bottom: 1px dashed rgba(168, 85, 247, .18);
+            border-right: 1px dashed rgba(168, 85, 247, .18)
+        }
+
+        .mq.tr {
+            top: 0;
+            right: 0;
+            background: var(--integral-bg);
+            border-bottom: 1px dashed rgba(168, 85, 247, .18)
+        }
+
+        .mq.bl {
+            bottom: 0;
+            left: 0;
+            background: var(--latente-bg);
+            border-right: 1px dashed rgba(124, 135, 149, .18)
+        }
+
+        .mq.br {
+            bottom: 0;
+            right: 0;
+            background: var(--activo-bg)
+        }
+
+        .ql {
+            font-size: 8px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: .6
+        }
+
+        .mq.tl .ql,
+        .mq.tr .ql {
+            color: var(--integral)
+        }
+
+        .mq.bl .ql {
+            color: var(--latente)
+        }
+
+        .mq.br .ql {
+            color: var(--activo)
+        }
+
+        .dot {
+            position: absolute;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all .2s;
+            z-index: 10;
+            border: 2px solid rgba(255, 255, 255, .25)
+        }
+
+        .dot:hover {
+            transform: scale(1.6);
+            z-index: 50 !important;
+            box-shadow: 0 0 16px rgba(99, 102, 241, .4)
+        }
+
+        .dot.la {
+            background: var(--latente)
+        }
+
+        .dot.vi {
+            background: var(--vinculado)
+        }
+
+        .dot.ac {
+            background: var(--activo)
+        }
+
+        .dot.ig {
+            background: var(--integral)
+        }
+
+        /* Cluster badge */
+        .cluster-wrap {
+            position: absolute;
+            z-index: 10;
+            cursor: pointer;
+            transition: all .2s
+        }
+
+        .cluster-wrap:hover {
+            z-index: 50 !important;
+            transform: scale(1.3)
+        }
+
+        .cluster-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: var(--cchc-red);
+            color: #fff;
+            font-size: 8px;
+            font-weight: 900;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--bg);
+            z-index: 20;
+            line-height: 1
+        }
+
+        .cluster-ring {
+            position: absolute;
+            inset: -3px;
+            border-radius: 50%;
+            border: 2px dashed rgba(255, 255, 255, .25);
+            animation: pulse-ring 2s ease infinite
+        }
+
+        @keyframes pulse-ring {
+
+            0%,
+            100% {
+                opacity: .3;
+                transform: scale(1)
+            }
+
+            50% {
+                opacity: .6;
+                transform: scale(1.15)
+            }
+        }
+
+        /* Diversity legend */
+        .div-legend {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-top: 10px;
+            flex-wrap: wrap
+        }
+
+        .div-legend-title {
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text3)
+        }
+
+        .div-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 9px;
+            color: var(--text3);
+            font-weight: 600
+        }
+
+        .div-legend-dot {
+            border-radius: 50%;
+            background: var(--accent);
+            opacity: .5;
+            display: inline-block
+        }
+
+        /* Tooltip multi */
+        .tip-divider {
+            border: none;
+            border-top: 1px dashed var(--border);
+            margin: 10px 0
+        }
+
+        .tip-multi-label {
+            font-size: 9px;
+            font-weight: 700;
+            color: var(--text3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px
+        }
+
+        .ax-row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text3)
+        }
+
+        /* Tooltip */
+        .tip {
+            position: fixed;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            min-width: 230px;
+            max-width: 320px;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, .4);
+            z-index: 9999;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity .12s
+        }
+
+        .tip.show {
+            opacity: 1
+        }
+
+        .tip.locked {
+            pointer-events: auto;
+            border-color: var(--accent);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .5), 0 0 0 2px var(--accent-glow)
+        }
+
+        .tip-close {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+            border: none;
+            background: var(--border);
+            color: var(--text2);
+            font-size: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all .15s
+        }
+
+        .tip-close:hover {
+            background: var(--cchc-red);
+            color: #fff
+        }
+
+        .tip-lock-hint {
+            font-size: 8px;
+            color: var(--text3);
+            text-align: center;
+            margin-top: 8px;
+            opacity: .7
+        }
+
+        .tip-name {
+            font-size: 13px;
+            font-weight: 800;
+            margin-bottom: 5px
+        }
+
+        .tip-cat {
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .8px;
+            padding: 3px 8px;
+            border-radius: 6px;
+            display: inline-block;
+            margin-bottom: 10px
+        }
+
+        .tip-g {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px
+        }
+
+        .tip-m {
+            background: var(--bg);
+            padding: 7px;
+            border-radius: 7px
+        }
+
+        .tip-ml {
+            font-size: 8px;
+            color: var(--text3);
+            font-weight: 700;
+            text-transform: uppercase
+        }
+
+        .tip-mv {
+            font-size: 16px;
+            font-weight: 900;
+            color: var(--accent2)
+        }
+
+        /* Table */
+        .tcard {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            transition: background .35s, border .35s
+        }
+
+        .thead {
+            padding: 18px 22px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center
+        }
+
+        .thead h3 {
+            font-size: 15px;
+            font-weight: 800
+        }
+
+        .twrap {
+            overflow-x: auto;
+            max-height: 480px;
+            overflow-y: auto
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px
+        }
+
+        thead {
+            position: sticky;
+            top: 0;
+            z-index: 5
+        }
+
+        th {
+            background: var(--surface2);
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text3);
+            border-bottom: 1px solid var(--border)
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            transition: background .12s
+        }
+
+        tr:hover td {
+            background: var(--surface2)
+        }
+
+        .badge {
+            padding: 3px 9px;
+            border-radius: 7px;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            white-space: nowrap
+        }
+
+        .badge.la {
+            background: var(--latente-bg);
+            color: var(--latente)
+        }
+
+        .badge.vi {
+            background: var(--vinculado-bg);
+            color: var(--vinculado)
+        }
+
+        .badge.ac {
+            background: var(--activo-bg);
+            color: var(--activo)
+        }
+
+        .badge.ig {
+            background: var(--integral-bg);
+            color: var(--integral)
+        }
+
+        .pill {
+            background: var(--accent);
+            color: #fff;
+            padding: 3px 10px;
+            border-radius: 7px;
+            font-weight: 800;
+            font-size: 12px;
+            display: inline-block
+        }
+
+        .sbar {
+            width: 50px;
+            height: 5px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 6px
+        }
+
+        .sbar span {
+            display: block;
+            height: 100%;
+            border-radius: 4px
+        }
+
+        .cmt {
+            max-width: 200px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--text3);
+            font-size: 11px;
+            cursor: help
+        }
+
+        /* Strategy */
+        .sgrid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 14px;
+            margin-top: 24px
+        }
+
+        .scard {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            transition: all .25s;
+            position: relative;
+            overflow: hidden
+        }
+
+        .scard:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, .15)
+        }
+
+        .scard::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px
+        }
+
+        .scard.la::before {
+            background: var(--latente)
+        }
+
+        .scard.vi::before {
+            background: var(--vinculado)
+        }
+
+        .scard.ac::before {
+            background: var(--activo)
+        }
+
+        .scard.ig::before {
+            background: var(--integral)
+        }
+
+        .sicon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            margin-bottom: 12px
+        }
+
+        .stitle {
+            font-size: 13px;
+            font-weight: 800;
+            margin-bottom: 3px
+        }
+
+        .srange {
+            font-size: 10px;
+            color: var(--text3);
+            margin-bottom: 8px
+        }
+
+        .sdesc {
+            font-size: 11px;
+            color: var(--text2);
+            line-height: 1.55
+        }
+
+        .footer {
+            text-align: center;
+            color: var(--text3);
+            font-size: 11px;
+            margin-top: 28px;
+            padding-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px
+        }
+
+        .footer img {
+            height: 18px;
+            opacity: .5
+        }
+
+        .error-box {
+            max-width: 400px;
+            margin: 0 auto;
+            background: var(--surface);
+            border: 1px solid var(--cchc-red);
+            border-radius: var(--radius);
+            padding: 36px;
+            text-align: center
+        }
+
+        .error-box i {
+            font-size: 44px;
+            color: var(--cchc-red);
+            margin-bottom: 14px
+        }
+
+        .error-box h2 {
+            font-size: 17px;
+            font-weight: 800;
+            margin-bottom: 6px
+        }
+
+        .error-box p {
+            font-size: 12px;
+            color: var(--text3);
+            margin-bottom: 18px
+        }
+
+        @media(max-width:900px) {
+            .row2 {
+                grid-template-columns: 1fr
+            }
+
+            .dashboard {
+                padding: 14px
+            }
+
+            .header-left h1 {
+                font-size: 18px
+            }
+
+            .kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px
+            }
+
+            .kpi.t {
+                grid-column: span 2;
+            }
+
+            .twrap {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            table {
+                min-width: 600px;
+            }
+        }
+
+        @media(max-width:600px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .header-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            /* Mantenemos 2 columnas en móvil para los totales como pidió el usuario */
+            .kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px
+            }
+
+            .kpi.t {
+                grid-column: span 2;
+            }
+
+            .filters {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-wrap {
+                width: 100%;
+            }
+
+            .fbtn {
+                text-align: left;
+                justify-content: space-between;
+                display: flex;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app"></div>
+    <div id="tip" class="tip"></div>
+
+    <script>
+        // Placeholder para inyectar la URL del flujo de Power Automate
+        const FLOW_URL = 'https://default6780ef6e6e8c4ac2b2bc18eb02f617.a6.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/d32768dce3624c109c8c950cdc851d2b/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=-dgJ9Kvs1Kljz8jHy6EeGdpQmfECKLvQD1SljDATtGA';
+        const LOGO = 'https://cchc.cl/documents/431409/0/logoCChC.png/002fea99-2039-beec-02a7-a92335532d6f?t=1695346405910';
+
+        const CATS = {
+            'Socio Latente': { k: 'la', c: '#e67e22', r: '0–2 pts', st: 'Activación / Diagnóstico', ic: 'fa-seedling', d: 'Socios sin participación activa. Requieren contacto inicial, diagnóstico de intereses y estrategia de activación personalizada.' },
+            'Socio vinculado': { k: 'vi', c: '#f1c40f', r: '3–5 pts', st: 'Visita Estratégica', ic: 'fa-handshake', d: 'Socios con participación inicial. Se sugiere visita presencial para fortalecer vínculo y explorar áreas de participación.' },
+            'Socio activo': { k: 'ac', c: '#6fbf73', r: '6–8 pts', st: 'Ampliación de Participación', ic: 'fa-chart-line', d: 'Socios comprometidos. Buscar ampliar su participación en nuevas comisiones, proyectos o instancias de liderazgo.' },
+            'Socio Integral': { k: 'ig', c: '#1b7a2b', r: '9–10 pts', st: 'Co-construcción y Liderazgo', ic: 'fa-crown', d: 'Socios líderes. Fortalecer su rol de co-construcción, mentoría y representación estratégica del gremio.' }
+        };
+        function ck(cat) { return CATS[cat]?.k || 'la' }
+        function cc(cat) { return CATS[cat]?.c || '#7c8795' }
+
+        let DATA = [], FIL = [], SEARCH = '', FCAT = 'Todas', donutChart = null, barChart = null;
+
+        /* Theme */
+        function toggleTheme() {
+            const h = document.documentElement;
+            h.dataset.theme = h.dataset.theme === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('ivg-theme', h.dataset.theme);
+            updateThemeIcon();
+            // Rebuild charts with new colors
+            if (DATA.length) renderAll();
+        }
+        function updateThemeIcon() {
+            const b = document.getElementById('theme-btn');
+            if (b) b.innerHTML = document.documentElement.dataset.theme === 'dark' ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
+        }
+        (function () { const t = localStorage.getItem('ivg-theme'); if (t) document.documentElement.dataset.theme = t; })();
+
+        async function fetchData() {
+            renderState('loading');
+
+            // Lista de proxies para intentar en caso de problemas de CORS
+            const proxies = [
+                url => url, // Intentar directo primero
+                url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+                url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`
+            ];
+
+            let lastError = '';
+
+            for (const getProxyUrl of proxies) {
+                try {
+                    const targetUrl = getProxyUrl(FLOW_URL);
+                    console.log('Intentando conexión vía:', targetUrl === FLOW_URL ? 'Directo' : 'Proxy');
+
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
+                    const r = await fetch(targetUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({}),
+                        signal: controller.signal
+                    });
+                    clearTimeout(timeoutId);
+
+                    if (!r.ok) throw new Error(`HTTP error! status: ${r.status}`);
+
+                    const json = await r.json();
+                    // Power Automate "List rows" devuelve { value: [...] }
+                    const rawData = Array.isArray(json) ? json : (json.value || []);
+
+                    if (rawData.length === 0) throw new Error('No se encontraron datos en la tabla (Tabla1)');
+
+                    DATA = rawData.map(item => {
+                        const o = {};
+                        for (let k in item) {
+                            // Omitir metadatos de Power Automate / OData
+                            if (k.startsWith('@odata') || k.startsWith('__PowerAppsId__')) continue;
+
+                            let v = item[k];
+                            // Limpiar comillas y espacios si vienen en el JSON
+                            if (typeof v === 'string') {
+                                v = v.trim().replace(/^"|"$/g, '');
+                                // Convertir a número si corresponde (mismo criterio que antes)
+                                if (v !== '' && !isNaN(v) && !v.includes('-')) {
+                                    v = parseFloat(v);
+                                }
+                            }
+                            o[k] = v;
+                        }
+                        return o;
+                    });
+
+                    console.log('Datos cargados exitosamente:', DATA.length, 'filas');
+                    applyFilters();
+                    return;
+                } catch (e) {
+                    console.warn(`Fallo en el intento: ${e.message}`);
+                    lastError = e.message;
+                }
+            }
+
+            renderState('error', `Error de conexión: ${lastError}. Por favor, verifica que el flujo de Power Automate esté activo y responda correctamente.`);
+        }
+
+        function applyFilters() {
+            FIL = DATA.filter(d => {
+                const nm = String(d.Empresa || '').toLowerCase();
+                const cat = String(d['Categorización socio '] || d['Categorización socio'] || '').trim();
+                return nm.includes(SEARCH.toLowerCase()) && (FCAT === 'Todas' || cat === FCAT);
+            });
+            renderAll();
+        }
+
+        function stats(arr) {
+            const t = arr.length; if (!t) return { total: 0, avg: '0.0', la: 0, vi: 0, ac: 0, ig: 0 };
+            const s = arr.reduce((a, c) => a + (parseFloat(c['IVG (0–10)']) || 0), 0);
+            return {
+                total: t, avg: (s / t).toFixed(1),
+                la: arr.filter(d => (parseFloat(d['IVG (0–10)']) || 0) <= 2).length,
+                vi: arr.filter(d => { const v = parseFloat(d['IVG (0–10)']) || 0; return v > 2 && v <= 5 }).length,
+                ac: arr.filter(d => { const v = parseFloat(d['IVG (0–10)']) || 0; return v > 5 && v <= 8 }).length,
+                ig: arr.filter(d => (parseFloat(d['IVG (0–10)']) || 0) > 8).length
+            };
+        }
+
+        /* Tooltip */
+        const tipEl = document.getElementById('tip');
+        let tipLocked = false;
+
+        function renderItemTip(item) {
+            const ivg = parseFloat(item['IVG (0–10)']) || 0;
+            const cat = String(item['Categorización socio '] || item['Categorización socio'] || '').trim();
+            const k = ck(cat);
+            const div = parseFloat(item['Diversidad (0–3)']) || 0;
+            const c1 = item['Comentarios 1'] || '';
+            const c2 = item['Comentarios 2'] || '';
+            const comment = [c1, c2].filter(Boolean).join(' · ');
+            return `<div class="tip-name">${item.Empresa}</div>
+                <span class="tip-cat badge ${k}">${cat}</span>
+                <div class="tip-g">
+                    <div class="tip-m"><div class="tip-ml">IVG</div><div class="tip-mv">${ivg}/10</div></div>
+                    <div class="tip-m"><div class="tip-ml">Intensidad</div><div class="tip-mv">${item['Intensidad (0–4)'] || 0}/4</div></div>
+                    <div class="tip-m"><div class="tip-ml">Diversidad</div><div class="tip-mv">${div}/3</div></div>
+                    <div class="tip-m"><div class="tip-ml">Compromiso</div><div class="tip-mv">${item['Compromiso (0–3)'] || 0}/3</div></div>
+                </div>
+                ${comment ? `<div style="margin-top:8px;font-size:10px;color:var(--text3);line-height:1.4"><i class="fa-solid fa-comment" style="margin-right:4px;opacity:.5"></i>${comment}</div>` : ''}`;
+        }
+
+        function buildTipContent(items, showClose) {
+            let html = '';
+            if (showClose) {
+                html += `<button class="tip-close" onclick="unlockTip()"><i class="fa-solid fa-xmark"></i></button>`;
+            }
+            if (items.length === 1) {
+                html += renderItemTip(items[0]);
+            } else {
+                html += `<div class="tip-multi-label"><i class="fa-solid fa-layer-group" style="margin-right:4px"></i>${items.length} empresas en esta posición</div>`;
+                html += items.map((item, i) => (i > 0 ? '<hr class="tip-divider">' : '') + renderItemTip(item)).join('');
+            }
+            if (!showClose && items.length > 1) {
+                html += `<div class="tip-lock-hint"><i class="fa-solid fa-hand-pointer" style="margin-right:3px"></i>Click para fijar y revisar</div>`;
+            }
+            return html;
+        }
+
+        function positionTip(e) {
+            const r = tipEl.getBoundingClientRect();
+            let x = e.clientX + 14, y = e.clientY - Math.min(r.height, 350) - 8;
+            if (x + r.width > window.innerWidth) x = e.clientX - r.width - 14;
+            if (y < 0) y = e.clientY + 14;
+            tipEl.style.left = x + 'px'; tipEl.style.top = y + 'px';
+        }
+
+        function showClusterTip(e, items) {
+            if (tipLocked) return; // Don't override locked tooltip
+            tipEl.innerHTML = buildTipContent(items, false);
+            tipEl.classList.add('show');
+            tipEl.classList.remove('locked');
+            tipEl.style.maxHeight = '400px';
+            tipEl.style.overflowY = 'auto';
+            positionTip(e);
+        }
+
+        function lockClusterTip(e, items) {
+            e.stopPropagation();
+            tipLocked = true;
+            tipEl.innerHTML = buildTipContent(items, true);
+            tipEl.classList.add('show', 'locked');
+            tipEl.style.maxHeight = '450px';
+            tipEl.style.overflowY = 'auto';
+            positionTip(e);
+        }
+
+        function unlockTip() {
+            tipLocked = false;
+            tipEl.classList.remove('show', 'locked');
+        }
+
+        function hideTip() {
+            if (tipLocked) return; // Don't hide if locked
+            tipEl.classList.remove('show');
+        }
+
+        // Click anywhere outside to unlock
+        document.addEventListener('click', (e) => {
+            if (tipLocked && !tipEl.contains(e.target) && !e.target.closest('[data-cluster]')) {
+                unlockTip();
+            }
+        });
+
+        /* Render */
+        function renderState(s, msg) {
+            const app = document.getElementById('app');
+            if (s === 'loading') { app.innerHTML = '<div class="loader-wrap"><div class="loader-ring"></div><p style="color:var(--text3);font-size:13px">Conectando con Excel vía Power Automate...</p></div>'; return; }
+            if (s === 'error') { app.innerHTML = `<div class="loader-wrap"><div class="error-box"><i class="fa-solid fa-triangle-exclamation"></i><h2>Error de Conexión</h2><p>${msg}</p><button class="btn btn-primary" onclick="fetchData()"><i class="fa-solid fa-rotate"></i> Reintentar</button></div></div>`; return; }
+        }
+
+        function renderAll() {
+            // Destroy old charts
+            if (donutChart) { donutChart.destroy(); donutChart = null; }
+            if (barChart) { barChart.destroy(); barChart = null; }
+
+            const sa = stats(DATA), sf = stats(FIL);
+            const app = document.getElementById('app');
+            const isDark = document.documentElement.dataset.theme === 'dark';
+            const accentLabel = isDark ? 'CChC Rojo' : 'CChC Azul';
+
+            app.innerHTML = `<div class="dashboard">
+        <header class="header fade-up">
+            <div class="header-left">
+                <img src="${LOGO}" alt="CChC" class="header-logo">
+                <div>
+                    <h1>Índice de Vinculación Gremial (IVG)</h1>
+                    <p><span class="live-dot"></span> Sincronizado en tiempo real · ${sa.total} empresas</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button id="theme-btn" class="btn btn-outline btn-icon" onclick="toggleTheme()" title="Cambiar tema"></button>
+            </div>
+        </header>
+
+        <div class="kpi-grid">
+            <div class="kpi t fade-up"><div class="kpi-lbl">Total Socios</div><div class="kpi-val" style="color:var(--accent)">${sa.total}</div><div class="kpi-bar"><span style="width:100%;background:var(--accent)"></span></div><div class="kpi-sub">Promedio IVG: ${sa.avg} pts</div></div>
+            <div class="kpi ig fade-up d1"><div class="kpi-lbl">Socio Integral (${sa.total ? (sa.ig / sa.total * 100).toFixed(1) : 0}%)</div><div class="kpi-val" style="color:var(--integral)">${sa.ig}</div><div class="kpi-bar"><span style="width:${sa.total ? sa.ig / sa.total * 100 : 0}%;background:var(--integral)"></span></div><div class="kpi-sub">9–10 pts</div></div>
+            <div class="kpi ac fade-up d2"><div class="kpi-lbl">Socio Activo (${sa.total ? (sa.ac / sa.total * 100).toFixed(1) : 0}%)</div><div class="kpi-val" style="color:var(--activo)">${sa.ac}</div><div class="kpi-bar"><span style="width:${sa.total ? sa.ac / sa.total * 100 : 0}%;background:var(--activo)"></span></div><div class="kpi-sub">6–8 pts</div></div>
+            <div class="kpi vi fade-up d3"><div class="kpi-lbl">Socio Vinculado (${sa.total ? (sa.vi / sa.total * 100).toFixed(1) : 0}%)</div><div class="kpi-val" style="color:var(--vinculado)">${sa.vi}</div><div class="kpi-bar"><span style="width:${sa.total ? sa.vi / sa.total * 100 : 0}%;background:var(--vinculado)"></span></div><div class="kpi-sub">3–5 pts</div></div>
+            <div class="kpi la fade-up d4"><div class="kpi-lbl">Socio Latente (${sa.total ? (sa.la / sa.total * 100).toFixed(1) : 0}%)</div><div class="kpi-val" style="color:var(--latente)">${sa.la}</div><div class="kpi-bar"><span style="width:${sa.total ? sa.la / sa.total * 100 : 0}%;background:var(--latente)"></span></div><div class="kpi-sub">0–2 pts</div></div>
+        </div>
+
+        <div class="filters fade-up d1">
+            <div class="search-wrap"><i class="fa-solid fa-magnifying-glass"></i><input id="sinput" type="text" placeholder="Buscar empresa..." value="${SEARCH}"></div>
+            <button class="fbtn ${FCAT === 'Todas' ? 'on' : ''}" data-f="Todas">Todas<span class="n">${sa.total}</span></button>
+            <button class="fbtn ${FCAT === 'Socio Integral' ? 'on' : ''}" data-f="Socio Integral">Integral<span class="n">${sa.ig}</span></button>
+            <button class="fbtn ${FCAT === 'Socio activo' ? 'on' : ''}" data-f="Socio activo">Activo<span class="n">${sa.ac}</span></button>
+            <button class="fbtn ${FCAT === 'Socio vinculado' ? 'on' : ''}" data-f="Socio vinculado">Vinculado<span class="n">${sa.vi}</span></button>
+            <button class="fbtn ${FCAT === 'Socio Latente' ? 'on' : ''}" data-f="Socio Latente">Latente<span class="n">${sa.la}</span></button>
+        </div>
+
+        <div class="row2 fade-up d2">
+            <div class="card">
+                <div class="card-title">Matriz de Cuadrantes IVG</div>
+                <div class="card-sub">Intensidad (eje X) vs Compromiso (eje Y) · Tamaño = Diversidad · ${sf.total} empresas</div>
+                <div class="mx">${mxQuads()}${mxDots()}</div>
+                <div class="ax-row"><span>← Baja Intensidad</span><span style="color:var(--accent)">Intensidad de Participación</span><span>Alta Intensidad →</span></div>
+                <div class="div-legend">
+                    <span class="div-legend-title">Diversidad:</span>
+                    <span class="div-legend-item"><span class="div-legend-dot" style="width:7px;height:7px"></span>0</span>
+                    <span class="div-legend-item"><span class="div-legend-dot" style="width:10px;height:10px"></span>1</span>
+                    <span class="div-legend-item"><span class="div-legend-dot" style="width:14px;height:14px"></span>2</span>
+                    <span class="div-legend-item"><span class="div-legend-dot" style="width:18px;height:18px"></span>3</span>
+                    <span class="div-legend-item" style="margin-left:8px"><span class="cluster-badge" style="position:static;width:14px;height:14px;font-size:7px">3</span> = empresas agrupadas</span>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-title" id="seg-title">Distribución por Segmento</div>
+                <div class="card-sub" id="seg-sub">Clasificación de socios según puntaje IVG</div>
+                <canvas id="c-donut" style="max-height:280px"></canvas>
+                <div id="c-legend" style="margin-top:14px"></div>
+            </div>
+        </div>
+
+        <div class="card fade-up d3" style="margin-bottom:24px">
+            <div class="card-title">Ranking IVG por Empresa</div>
+            <div class="card-sub">Puntaje total ordenado de mayor a menor</div>
+            <div style="height:300px"><canvas id="c-bar"></canvas></div>
+        </div>
+
+        <div class="tcard fade-up d3">
+            <div class="thead"><h3><i class="fa-solid fa-table-list" style="margin-right:8px;color:var(--accent)"></i>Base Completa de Socios</h3><span style="color:var(--text3);font-size:11px;font-weight:700">${sf.total} resultados</span></div>
+            <div class="twrap"><table><thead><tr><th>Empresa</th><th style="text-align:center">Intensidad</th><th style="text-align:center">Diversidad</th><th style="text-align:center">Compromiso</th><th style="text-align:center">IVG</th><th>Categoría</th></tr></thead><tbody>${tRows()}</tbody></table></div>
+        </div>
+
+        <div class="sgrid fade-up d4">${Object.entries(CATS).map(([n, i]) => `<div class="scard ${i.k}"><div class="sicon" style="background:${i.c}22;color:${i.c}"><i class="fa-solid ${i.ic}"></i></div><div class="stitle" style="color:${i.c}">${n}</div><div class="srange">${i.r} · ${i.st}</div><div class="sdesc">${i.d}</div></div>`).join('')}</div>
+
+        <div class="footer"><img src="${LOGO}" alt="CChC">CChC Maule</div>
+    </div>`;
+
+            updateThemeIcon();
+            // Bind search
+            const si = document.getElementById('sinput');
+            if (si) {
+                si.addEventListener('input', e => { SEARCH = e.target.value; applyFilters(); });
+                // Restore focus
+                setTimeout(() => { si.focus(); si.setSelectionRange(SEARCH.length, SEARCH.length); }, 10);
+            }
+            // Bind filters
+            document.querySelectorAll('.fbtn').forEach(b => b.addEventListener('click', () => { FCAT = b.dataset.f; applyFilters(); }));
+            // Bind clusters and dots
+            document.querySelectorAll('[data-cluster]').forEach(el => {
+                const indices = JSON.parse(el.dataset.cluster);
+                const items = indices.map(i => FIL[i]);
+                el.addEventListener('mouseenter', e => showClusterTip(e, items));
+                el.addEventListener('mousemove', e => showClusterTip(e, items));
+                el.addEventListener('mouseleave', hideTip);
+                el.addEventListener('click', e => lockClusterTip(e, items));
+            });
+            // Build charts
+            buildSegmentChart(sf);
+            buildBar();
+        }
+
+        function mxQuads() { return `<div class="mq tl"><span class="ql">Alto Compromiso / Baja Intensidad</span></div><div class="mq tr"><span class="ql">★ Liderazgo Integral</span></div><div class="mq bl"><span class="ql">Latencia</span></div><div class="mq br"><span class="ql">Participación Operativa</span></div>`; }
+
+        // Size map for Diversidad 0-3
+        const DIV_SIZES = [7, 11, 15, 19];
+
+        function mxDots() {
+            // Group by (Intensidad, Compromiso) position
+            const groups = {};
+            FIL.forEach((item, idx) => {
+                const it = parseFloat(item['Intensidad (0–4)']) || 0;
+                const co = parseFloat(item['Compromiso (0–3)']) || 0;
+                const key = `${it}_${co}`;
+                if (!groups[key]) groups[key] = { it, co, items: [] };
+                groups[key].items.push({ item, idx });
+            });
+
+            return Object.values(groups).map(group => {
+                const { it, co, items } = group;
+                const xPct = (it / 4) * 78 + 11;
+                const yPct = (1 - co / 3) * 78 + 11;
+
+                if (items.length === 1) {
+                    // Single dot — size by Diversidad
+                    const { item, idx } = items[0];
+                    const div = parseFloat(item['Diversidad (0–3)']) || 0;
+                    const cat = String(item['Categorización socio '] || item['Categorización socio'] || '').trim();
+                    const k = ck(cat);
+                    const sz = DIV_SIZES[Math.min(div, 3)];
+                    return `<div class="dot ${k}" data-cluster="[${idx}]" style="width:${sz}px;height:${sz}px;left:${xPct}%;top:${yPct}%;transform:translate(-50%,-50%)"></div>`;
+                } else {
+                    // Cluster — multiple companies at same position
+                    // Use max diversidad for size, dominant category for color
+                    const maxDiv = Math.max(...items.map(i => parseFloat(i.item['Diversidad (0–3)']) || 0));
+                    const sz = DIV_SIZES[Math.min(maxDiv, 3)] + 4;
+                    // Dominant category (most frequent)
+                    const catCounts = {};
+                    items.forEach(i => {
+                        const c = String(i.item['Categorización socio '] || i.item['Categorización socio'] || '').trim();
+                        catCounts[c] = (catCounts[c] || 0) + 1;
+                    });
+                    const domCat = Object.entries(catCounts).sort((a, b) => b[1] - a[1])[0][0];
+                    const k = ck(domCat);
+                    const idxList = JSON.stringify(items.map(i => i.idx));
+                    return `<div class="cluster-wrap" data-cluster='${idxList}' style="left:${xPct}%;top:${yPct}%;transform:translate(-50%,-50%)">
+                        <div class="dot ${k}" style="position:relative;width:${sz}px;height:${sz}px">
+                            <div class="cluster-ring"></div>
+                        </div>
+                        <div class="cluster-badge">${items.length}</div>
+                    </div>`;
+                }
+            }).join('');
+        }
+
+        function tRows() {
+            return [...FIL].sort((a, b) => (parseFloat(b['IVG (0–10)']) || 0) - (parseFloat(a['IVG (0–10)']) || 0)).map(item => {
+                const ivg = parseFloat(item['IVG (0–10)']) || 0;
+                const cat = String(item['Categorización socio '] || item['Categorización socio'] || '').trim();
+                const k = ck(cat);
+                const color = cc(cat);
+                const it = parseFloat(item['Intensidad (0–4)']) || 0;
+                const dv = parseFloat(item['Diversidad (0–3)']) || 0;
+                const co = parseFloat(item['Compromiso (0–3)']) || 0;
+                return `<tr style="border-left:3px solid ${color}">
+                    <td style="font-weight:700">
+                        <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${color};margin-right:8px;vertical-align:middle"></span>${item.Empresa}
+                    </td>
+                    <td style="text-align:center;font-weight:600">${it}</td>
+                    <td style="text-align:center;font-weight:600">${dv}</td>
+                    <td style="text-align:center;font-weight:600">${co}</td>
+                    <td style="text-align:center"><span class="pill" style="background:${color}">${ivg}</span></td>
+                    <td><span class="badge ${k}">${cat}</span></td>
+                </tr>`;
+            }).join('');
+        }
+
+        function buildSegmentChart(s) {
+            const ctx = document.getElementById('c-donut'); if (!ctx) return;
+            const titleEl = document.getElementById('seg-title');
+            const subEl = document.getElementById('seg-sub');
+
+            const isAll = FCAT === 'Todas';
+            const catInfo = CATS[FCAT];
+            const catColor = isAll ? getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() : (catInfo?.c || '#999');
+
+            if (titleEl) {
+                if (isAll) titleEl.innerHTML = `<span><i class="fa-solid fa-chart-radar" style="margin-right:6px"></i>Perfil Global de Dimensiones</span>`;
+                else titleEl.innerHTML = `<span style="color:${catColor}"><i class="fa-solid ${catInfo?.ic || 'fa-chart-radar'}" style="margin-right:6px"></i>${FCAT}</span> — Perfil de Dimensiones`;
+            }
+
+            if (subEl) subEl.textContent = `Promedio de las 3 dimensiones · ${FIL.length} empresa${FIL.length !== 1 ? 's' : ''}`;
+
+            // Calculate averages
+            const avgIt = FIL.length ? FIL.reduce((a, d) => a + (parseFloat(d['Intensidad (0–4)']) || 0), 0) / FIL.length : 0;
+            const avgDv = FIL.length ? FIL.reduce((a, d) => a + (parseFloat(d['Diversidad (0–3)']) || 0), 0) / FIL.length : 0;
+            const avgCo = FIL.length ? FIL.reduce((a, d) => a + (parseFloat(d['Compromiso (0–3)']) || 0), 0) / FIL.length : 0;
+            const avgIvg = FIL.length ? FIL.reduce((a, d) => a + (parseFloat(d['IVG (0–10)']) || 0), 0) / FIL.length : 0;
+
+            const tickColor = getComputedStyle(document.documentElement).getPropertyValue('--text3').trim();
+            const gridColor = getComputedStyle(document.documentElement).getPropertyValue('--border').trim();
+
+            donutChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Intensidad (0–4)', 'Diversidad (0–3)', 'Compromiso (0–3)'],
+                    datasets: [{
+                        label: isAll ? 'Promedio Global' : 'Promedio del grupo',
+                        data: [avgIt, avgDv, avgCo],
+                        backgroundColor: catColor + '33',
+                        borderColor: catColor,
+                        borderWidth: 2.5,
+                        pointBackgroundColor: catColor,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }, {
+                        label: 'Máximo posible',
+                        data: [4, 3, 3],
+                        backgroundColor: 'rgba(255,255,255,.03)',
+                        borderColor: gridColor,
+                        borderWidth: 1,
+                        borderDash: [4, 4],
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 4,
+                            ticks: { color: tickColor, stepSize: 1, backdropColor: 'transparent', font: { size: 10 } },
+                            grid: { color: gridColor },
+                            angleLines: { color: gridColor },
+                            pointLabels: { color: tickColor, font: { size: 11, weight: '700' } }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { backgroundColor: '#1e2436', titleColor: '#f1f5f9', bodyColor: '#a0aec0', padding: 10, cornerRadius: 8, titleFont: { weight: 800 } }
+                    }
+                }
+            });
+
+            // Show stats legend
+            const leg = document.getElementById('c-legend');
+            if (leg) leg.innerHTML = `
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                    <div style="background:var(--bg);padding:10px;border-radius:8px">
+                        <div style="font-size:8px;color:var(--text3);font-weight:700;text-transform:uppercase">Promedio IVG</div>
+                        <div style="font-size:20px;font-weight:900;color:${catColor}">${avgIvg.toFixed(1)}<span style="font-size:11px;color:var(--text3);font-weight:600">/10</span></div>
+                    </div>
+                    <div style="background:var(--bg);padding:10px;border-radius:8px">
+                        <div style="font-size:8px;color:var(--text3);font-weight:700;text-transform:uppercase">Empresas</div>
+                        <div style="font-size:20px;font-weight:900;color:${catColor}">${FIL.length}</div>
+                    </div>
+                    <div style="background:var(--bg);padding:10px;border-radius:8px">
+                        <div style="font-size:8px;color:var(--text3);font-weight:700;text-transform:uppercase">Intensidad prom.</div>
+                        <div style="font-size:16px;font-weight:800">${avgIt.toFixed(1)}<span style="font-size:10px;color:var(--text3)">/4</span></div>
+                    </div>
+                    <div style="background:var(--bg);padding:10px;border-radius:8px">
+                        <div style="font-size:8px;color:var(--text3);font-weight:700;text-transform:uppercase">Diversidad prom.</div>
+                        <div style="font-size:16px;font-weight:800">${avgDv.toFixed(1)}<span style="font-size:10px;color:var(--text3)">/3</span></div>
+                    </div>
+                    <div style="background:var(--bg);padding:10px;border-radius:8px;grid-column:span 2">
+                        <div style="font-size:8px;color:var(--text3);font-weight:700;text-transform:uppercase">Compromiso prom.</div>
+                        <div style="font-size:16px;font-weight:800">${avgCo.toFixed(1)}<span style="font-size:10px;color:var(--text3)">/3</span></div>
+                    </div>
+                </div>`;
+        }
+
+        function buildBar() {
+            const ctx = document.getElementById('c-bar'); if (!ctx) return;
+            const sorted = [...FIL].sort((a, b) => (parseFloat(b['IVG (0–10)']) || 0) - (parseFloat(a['IVG (0–10)']) || 0));
+            const labels = sorted.map(d => { const n = String(d.Empresa || ''); return n.length > 18 ? n.substring(0, 16) + '…' : n });
+            const values = sorted.map(d => parseFloat(d['IVG (0–10)']) || 0);
+            const colors = sorted.map(d => cc(String(d['Categorización socio '] || d['Categorización socio'] || '').trim()));
+            const gridColor = getComputedStyle(document.documentElement).getPropertyValue('--border').trim();
+            const tickColor = getComputedStyle(document.documentElement).getPropertyValue('--text3').trim();
+            barChart = new Chart(ctx, { type: 'bar', data: { labels, datasets: [{ data: values, backgroundColor: colors, borderRadius: 5, barThickness: sorted.length > 30 ? 7 : 12 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1e2436', titleColor: '#f1f5f9', bodyColor: '#a0aec0', padding: 10, cornerRadius: 8 } }, scales: { x: { ticks: { color: tickColor, font: { size: 8 }, maxRotation: 90, minRotation: 45 }, grid: { display: false } }, y: { ticks: { color: tickColor, stepSize: 2 }, grid: { color: gridColor }, max: 10 } } } });
+        }
+
+        fetchData();
+    </script>
+</body>
+
+</html>
